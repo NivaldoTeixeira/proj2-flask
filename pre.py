@@ -12,6 +12,8 @@ def process(raw):
     may be continued if they don't contain ':'.  
     """
     field = None
+    flag = 0
+    
     entry = { }
     cooked = [ ] 
     for line in raw:
@@ -31,18 +33,21 @@ def process(raw):
 
         if field == "begin":
             try:
-                base = arrow.get(content)
+                base = arrow.get(content,'MM/DD/YYYY')
             except:
                 raise ValueError("Unable to parse date {}".format(content))
-
+         
         elif field == "week":
             if entry:
                 cooked.append(entry)
                 entry = { }
             entry['topic'] = ""
+            entry['current_week'] = 0
             entry['project'] = ""
-            entry['week'] = content
-
+            entry['week'] = content + ' (' + str(base.replace(weeks=+int(content)-1).format('MM-DD-YYYY') + ')')
+            if flag == 0 and base.replace(weeks=+int(content)) > arrow.get():
+                flag = 1
+                entry['current_week'] = 1
         elif field == 'topic' or field == 'project':
             entry[field] = content
 
